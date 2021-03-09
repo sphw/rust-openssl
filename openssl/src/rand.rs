@@ -53,6 +53,36 @@ pub fn keep_random_devices_open(keep: bool) {
     }
 }
 
+/// Mixes the specified bytes into the PRNG state.
+///
+/// This corresponds to [`RAND_add`]
+///
+/// The data passed into this function should, in most cases, be unpredictable to an adversary.
+///
+/// [`RAND_add`]: https://www.openssl.org/docs/manmaster/man3/RAND_add.html
+pub fn add(buf: &[u8], entropy: f64) {
+    unsafe {
+        ffi::RAND_add(
+            buf.as_ptr() as *const libc::c_void,
+            buf.len() as i32,
+            entropy,
+        )
+    }
+}
+
+/// Mixes the specified bytes into the PRNG state.
+///
+/// This corresponds to [`RAND_seed`]
+///
+/// The data passed into this function should, in most cases, be unpredictable to an adversary.
+///
+/// This is equivalent to [`add`] when `entropy == buf.len()`
+///
+/// [`RAND_seed`]: https://www.openssl.org/docs/manmaster/man3/RAND_seed.html
+pub fn seed(buf: &[u8]) {
+    unsafe { ffi::RAND_seed(buf.as_ptr() as *const libc::c_void, buf.len() as i32) }
+}
+
 #[cfg(test)]
 mod tests {
     use super::rand_bytes;
